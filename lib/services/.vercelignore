@@ -1,0 +1,8 @@
+# Erstelle .vercelignore
+@"
+lib/services
+"@ | Out-File -FilePath ".vercelignore" -Encoding utf8
+
+git add .vercelignore
+git commit -m "add vercelignore"
+git push
