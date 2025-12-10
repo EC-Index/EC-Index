@@ -1,4 +1,4 @@
-// lib/utils/rate-limit.ts
+﻿// lib/utils/rate-limit.ts
 
 interface RateLimitStore {
   count: number;
@@ -7,56 +7,29 @@ interface RateLimitStore {
 
 const store = new Map<string, RateLimitStore>();
 
-/**
- * Simple in-memory rate limiter
- * In production, use Redis or similar
- */
-export function rateLimit(
-  identifier: string,
-  limit: number = 60,
-  windowMs: number = 60000 // 1 minute
-): { success: boolean; remaining: number; resetTime: number } {
+export function rateLimit(key: string, limit: number, windowMs: number = 60000) {
   const now = Date.now();
-  const record = store.get(identifier);
+  const record = store.get(key);
 
-  // No record or window expired
   if (!record || now > record.resetTime) {
-    store.set(identifier, {
-      count: 1,
-      resetTime: now + windowMs,
-    });
-    return {
-      success: true,
-      remaining: limit - 1,
-      resetTime: now + windowMs,
-    };
+    store.set(key, { count: 1, resetTime: now + windowMs });
+    return { success: true, remaining: limit - 1, resetTime: now + windowMs };
   }
 
-  // Within window
-  if (record.count < limit) {
-    record.count++;
-    return {
-      success: true,
-      remaining: limit - record.count,
-      resetTime: record.resetTime,
-    };
+  if (record.count >= limit) {
+    return { success: false, remaining: 0, resetTime: record.resetTime };
   }
 
-  // Rate limit exceeded
-  return {
-    success: false,
-    remaining: 0,
-    resetTime: record.resetTime,
-  };
+  record.count++;
+  return { success: true, remaining: limit - record.count, resetTime: record.resetTime };
 }
 
-/**
- * Clean up expired entries (call periodically)
- */
 export function cleanupRateLimitStore() {
   const now = Date.now();
-  for (const [key, value] of store.entries()) {
-    if (now > value.resetTime) {
+  const keys = Array.from(store.keys());
+  for (const key of keys) {
+    const value = store.get(key);
+    if (value && now > value.resetTime) {
       store.delete(key);
     }
   }
