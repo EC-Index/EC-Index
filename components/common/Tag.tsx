@@ -1,5 +1,4 @@
-// components/common/Tag.tsx
-
+﻿// components/common/Tag.tsx
 import { cn } from "@/lib/utils";
 import { getPlatformDisplayName } from "@/lib/charts";
 
