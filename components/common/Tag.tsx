@@ -22,7 +22,7 @@ export default function Tag({
 
   const displayText =
     variant === "platform"
-      ? getPlatformDisplayName(children as string)
+      ? getPlatformDisplayName(children as any)
       : children;
 
   return (
