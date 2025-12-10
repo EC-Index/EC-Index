@@ -1,65 +1,29 @@
 // app/api/newsletter/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { rateLimit } from "@/lib/utils/rate-limit";
-import { RATE_LIMITS } from "@/lib/config/constants";
-
-const NewsletterSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  source: z.string().optional(),
-});
+import { isValidEmail } from "@/lib/utils";
 
 export async function POST(request: NextRequest) {
   try {
-    // Get IP for rate limiting
-    const ip = request.ip || request.headers.get("x-forwarded-for") || "anonymous";
-    
-    // Rate limiting
-    const rateLimitResult = rateLimit(`newsletter:${ip}`, RATE_LIMITS.NEWSLETTER);
-    
-    if (!rateLimitResult.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            message: "Too many requests. Please try again later.",
-            code: "RATE_LIMIT_EXCEEDED",
-          },
-        },
-        {
-          status: 429,
-          headers: {
-            "X-RateLimit-Limit": RATE_LIMITS.NEWSLETTER.toString(),
-            "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
-            "X-RateLimit-Reset": new Date(rateLimitResult.resetTime).toISOString(),
-          },
-        }
-      );
-    }
+    // Get IP for rate limiting (Next.js 16 compatible)
+    const ip = request.headers.get("x-forwarded-for") || 
+               request.headers.get("x-real-ip") || 
+               "anonymous";
 
     // Parse and validate body
     const body = await request.json();
-    const validation = NewsletterSchema.safeParse(body);
+    const { email, source } = body;
 
-    if (!validation.success) {
+    // Validate email
+    if (!email || !isValidEmail(email)) {
       return NextResponse.json(
-        {
-          success: false,
-          error: {
-            message: "Invalid input",
-            code: "VALIDATION_ERROR",
-            details: validation.error.flatten(),
-          },
-        },
+        { success: false, error: "Invalid email address" },
         { status: 400 }
       );
     }
 
-    const { email, source } = validation.data;
-
-    // TODO: Save to database or send to email service
-    // For now, just log
+    // TODO: In production, save to database or send to email service
+    // For now, just log to console
     console.log("Newsletter subscription:", {
       email,
       source: source || "unknown",
@@ -70,49 +34,15 @@ export async function POST(request: NextRequest) {
     // Simulate async operation
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: {
-          message: "Successfully subscribed to waitlist",
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-        },
-      },
-      {
-        status: 200,
-        headers: {
-          "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
-        },
-      }
-    );
+    return NextResponse.json({
+      success: true,
+      message: "Successfully subscribed to waitlist",
+    });
   } catch (error) {
-    console.error("Newsletter API error:", error);
-    
+    console.error("Newsletter subscription error:", error);
     return NextResponse.json(
-      {
-        success: false,
-        error: {
-          message: "Internal server error",
-          code: "INTERNAL_ERROR",
-        },
-      },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }
-}
-
-// Handle unsupported methods
-export async function GET() {
-  return NextResponse.json(
-    {
-      success: false,
-      error: {
-        message: "Method not allowed",
-        code: "METHOD_NOT_ALLOWED",
-      },
-    },
-    { status: 405 }
-  );
 }

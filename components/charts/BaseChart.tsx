@@ -1,3 +1,5 @@
+// components/charts/BaseChart.tsx
+
 "use client";
 
 import { ChartSeries } from "@/lib/types/chart.types";
@@ -14,9 +16,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  TooltipProps,
 } from "recharts";
-import { format } from "date-fns";
 import { formatNumber } from "@/lib/utils/format";
 
 interface BaseChartProps {
@@ -44,11 +44,13 @@ export default function BaseChart({
   formatValue = (v) => formatNumber(v, 2),
   className = "",
 }: BaseChartProps) {
-  // Combine all series into single dataset
   const allDates = series[0]?.data.map((d) => d.date) || [];
   const chartData = allDates.map((date) => {
     const dataPoint: any = {
-      date: format(new Date(date), "MMM yyyy"),
+      date: new Date(date).toLocaleDateString("en-US", {
+        month: "short",
+        year: "numeric",
+      }),
       fullDate: date,
     };
 
@@ -60,13 +62,13 @@ export default function BaseChart({
     return dataPoint;
   });
 
-  const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+  const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload || !payload.length) return null;
 
     return (
       <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
         <p className="text-sm font-medium text-gray-900 mb-2">{label}</p>
-        {payload.map((entry, index) => (
+        {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2 text-sm">
             <div
               className="w-3 h-3 rounded-full"
@@ -147,7 +149,7 @@ export default function BaseChart({
           </BarChart>
         );
 
-      default: // line
+      default:
         return (
           <LineChart {...commonProps}>
             {showGrid && <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />}

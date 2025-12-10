@@ -36,20 +36,14 @@ export default function ChartCard({ chart }: ChartCardProps) {
     value: point.value,
   }));
 
+  const color = firstSeries.color || "#3B82F6";
+
   // Render appropriate chart type
   const renderPreviewChart = () => {
-    const commonProps = {
-      width: "100%",
-      height: 120,
-      data: previewData,
-    };
-
-    const color = firstSeries.color || "#3B82F6";
-
     switch (chart.chartType) {
       case "area":
         return (
-          <ResponsiveContainer {...commonProps}>
+          <ResponsiveContainer width="100%" height={120}>
             <AreaChart data={previewData}>
               <defs>
                 <linearGradient id={`gradient-${chart.id}`} x1="0" y1="0" x2="0" y2="1">
@@ -72,7 +66,7 @@ export default function ChartCard({ chart }: ChartCardProps) {
         );
       case "bar":
         return (
-          <ResponsiveContainer {...commonProps}>
+          <ResponsiveContainer width="100%" height={120}>
             <BarChart data={previewData}>
               <XAxis dataKey="date" hide />
               <YAxis hide />
@@ -83,7 +77,7 @@ export default function ChartCard({ chart }: ChartCardProps) {
         );
       default: // line
         return (
-          <ResponsiveContainer {...commonProps}>
+          <ResponsiveContainer width="100%" height={120}>
             <LineChart data={previewData}>
               <XAxis dataKey="date" hide />
               <YAxis hide />
