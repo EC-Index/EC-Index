@@ -50,7 +50,7 @@ export default function ChartDetail({ chartData, series }: ChartDetailProps) {
             <AreaChart data={chartDataPoints}>
               <defs>
                 {series.map((s, idx) => (
-                  <linearGradient key={idx} id={`gradient-detail-${idx}`} x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient key={idx} id={"gradient-detail-" + idx} x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor={s.color || "#3B82F6"} stopOpacity={0.3} />
                     <stop offset="95%" stopColor={s.color || "#3B82F6"} stopOpacity={0} />
                   </linearGradient>
@@ -62,7 +62,7 @@ export default function ChartDetail({ chartData, series }: ChartDetailProps) {
               <Tooltip />
               <Legend />
               {series.map((s, idx) => (
-                <Area key={idx} type="monotone" dataKey={s.name} stroke={s.color || "#3B82F6"} fill={`url(#gradient-detail-${idx})`} strokeWidth={2} />
+                <Area key={idx} type="monotone" dataKey={s.name} stroke={s.color || "#3B82F6"} fill={"url(#gradient-detail-" + idx + ")"} strokeWidth={2} />
               ))}
             </AreaChart>
           </ResponsiveContainer>
