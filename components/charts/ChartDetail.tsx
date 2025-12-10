@@ -46,16 +46,10 @@ export default function ChartDetail({ chartData, series }: ChartDetailProps) {
   });
 
   const renderChart = () => {
-    const commonProps = {
-      width: "100%",
-      height: 400,
-      data: chartDataPoints,
-    };
-
     switch (chartData.chartType) {
       case "area":
         return (
-          <ResponsiveContainer {...commonProps}>
+          <ResponsiveContainer width="100%" height={400}>
             <AreaChart data={chartDataPoints}>
               <defs>
                 {series.map((s, idx) => (
@@ -106,7 +100,7 @@ export default function ChartDetail({ chartData, series }: ChartDetailProps) {
         );
       case "bar":
         return (
-          <ResponsiveContainer {...commonProps}>
+          <ResponsiveContainer width="100%" height={400}>
             <BarChart data={chartDataPoints}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
@@ -127,7 +121,7 @@ export default function ChartDetail({ chartData, series }: ChartDetailProps) {
         );
       default: // line
         return (
-          <ResponsiveContainer {...commonProps}>
+          <ResponsiveContainer width="100%" height={400}>
             <LineChart data={chartDataPoints}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
