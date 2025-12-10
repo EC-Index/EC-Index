@@ -28,7 +28,7 @@ export function generatePageMetadata({
   return {
     title: `${title} | ${siteConfig.name}`,
     description,
-    keywords: siteConfig.keywords,
+    keywords: [...siteConfig.keywords],
     authors: [{ name: siteConfig.name }],
     creator: siteConfig.creator,
     openGraph: {
