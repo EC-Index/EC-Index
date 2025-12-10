@@ -1,23 +1,10 @@
-// lib/services/chart-service.ts
-
-import { charts } from "../charts";
+import { CHART_DEFINITIONS, getChartsByFilter as filterCharts } from "../charts";
 import { ChartDefinition } from "../types";
 
 export function getAllCharts(): ChartDefinition[] {
-  return charts;
+  return CHART_DEFINITIONS;
 }
 
-export function getChartsByFilter({
-  category,
-  platform,
-}: {
-  category?: string;
-  platform?: string;
-}): ChartDefinition[] {
-  return charts.filter((chart) => {
-    let ok = true;
-    if (category) ok = ok && chart.category === category;
-    if (platform) ok = ok && chart.platforms?.includes(platform);
-    return ok;
-  });
+export function getChartsByFilter(filter: any): ChartDefinition[] {
+  return filterCharts(filter);
 }
