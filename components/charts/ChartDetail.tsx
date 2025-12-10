@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ChartSeries } from "@/lib/types";
 import {
@@ -27,7 +27,6 @@ interface ChartDetailProps {
 }
 
 export default function ChartDetail({ chartData, series }: ChartDetailProps) {
-  // Prepare data for the chart
   const allDates = series[0]?.data.map((d) => d.date) || [];
   const chartDataPoints = allDates.map((date) => {
     const dataPoint: any = {
@@ -36,12 +35,10 @@ export default function ChartDetail({ chartData, series }: ChartDetailProps) {
         year: "numeric",
       }),
     };
-
     series.forEach((s) => {
       const point = s.data.find((d) => d.date === date);
       dataPoint[s.name] = point ? point.value : null;
     });
-
     return dataPoint;
   });
 
@@ -53,47 +50,19 @@ export default function ChartDetail({ chartData, series }: ChartDetailProps) {
             <AreaChart data={chartDataPoints}>
               <defs>
                 {series.map((s, idx) => (
-                  <linearGradient
-                    key={idx}
-                    id={`gradient-detail-${idx}`}
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="5%"
-                      stopColor={s.color || "#3B82F6"}
-                      stopOpacity={0.3}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor={s.color || "#3B82F6"}
-                      stopOpacity={0}
-                    />
+                  <linearGradient key={idx} id={`gradient-detail-${idx}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={s.color || "#3B82F6"} stopOpacity={0.3} />
+                    <stop offset="95%" stopColor={s.color || "#3B82F6"} stopOpacity={0} />
                   </linearGradient>
                 ))}
               </defs>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
-              <YAxis
-                label={{
-                  value: chartData.yAxisLabel,
-                  angle: -90,
-                  position: "insideLeft",
-                }}
-              />
+              <YAxis label={{ value: chartData.yAxisLabel, angle: -90, position: "insideLeft" }} />
               <Tooltip />
               <Legend />
               {series.map((s, idx) => (
-                <Area
-                  key={idx}
-                  type="monotone"
-                  dataKey={s.name}
-                  stroke={s.color || "#3B82F6"}
-                  fill={`url(#gradient-detail-${idx})`}
-                  strokeWidth={2}
-                />
+                <Area key={idx} type="monotone" dataKey={s.name} stroke={s.color || "#3B82F6"} fill={`url(#gradient-detail-${idx})`} strokeWidth={2} />
               ))}
             </AreaChart>
           </ResponsiveContainer>
@@ -104,13 +73,7 @@ export default function ChartDetail({ chartData, series }: ChartDetailProps) {
             <BarChart data={chartDataPoints}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
-              <YAxis
-                label={{
-                  value: chartData.yAxisLabel,
-                  angle: -90,
-                  position: "insideLeft",
-                }}
-              />
+              <YAxis label={{ value: chartData.yAxisLabel, angle: -90, position: "insideLeft" }} />
               <Tooltip />
               <Legend />
               {series.map((s, idx) => (
@@ -119,30 +82,17 @@ export default function ChartDetail({ chartData, series }: ChartDetailProps) {
             </BarChart>
           </ResponsiveContainer>
         );
-      default: // line
+      default:
         return (
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={chartDataPoints}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
-              <YAxis
-                label={{
-                  value: chartData.yAxisLabel,
-                  angle: -90,
-                  position: "insideLeft",
-                }}
-              />
+              <YAxis label={{ value: chartData.yAxisLabel, angle: -90, position: "insideLeft" }} />
               <Tooltip />
               <Legend />
               {series.map((s, idx) => (
-                <Line
-                  key={idx}
-                  type="monotone"
-                  dataKey={s.name}
-                  stroke={s.color || "#3B82F6"}
-                  strokeWidth={2}
-                  dot={false}
-                />
+                <Line key={idx} type="monotone" dataKey={s.name} stroke={s.color || "#3B82F6"} strokeWidth={2} dot={false} />
               ))}
             </LineChart>
           </ResponsiveContainer>
