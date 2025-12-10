@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getAllCharts, getChartsByFilter } from "@/lib/services/chart-service";
+import { getAllCharts, getChartsByFilter } from "../../../lib/services/chart-service";
 import { ChartCategorySchema, PlatformSchema } from "@/lib/types/chart.types";
 import { rateLimit } from "@/lib/utils/rate-limit";
 import { RATE_LIMITS, CACHE_TIMES } from "@/lib/config/constants";
