@@ -1,0 +1,130 @@
+# .github/workflows/collect-data.yml
+# Automated weekly data collection for EC-Index benchmarks
+#
+# This workflow:
+# 1. Runs every Sunday at 3:00 AM UTC
+# 2. Collects data from Amazon (DMA), eBay (API), Idealo, Geizhals
+# 3. Commits the new JSON data files
+# 4. Optionally triggers a website rebuild
+#
+# Required Secrets:
+# - EBAY_APP_ID, EBAY_CERT_ID (for eBay Browse API)
+# - VERCEL_DEPLOY_HOOK (optional, for auto-rebuild)
+#
+# Note: Amazon data is collected under EU DMA - no API key needed!
+
+name: Collect Market Data
+
+on:
+  # Weekly schedule: Sunday 3:00 AM UTC (4:00 AM Berlin)
+  schedule:
+    - cron: '0 3 * * 0'
+  
+  # Also run on Wednesday for mid-week updates
+  # - cron: '0 3 * * 3'
+  
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      benchmark:
+        description: 'Specific benchmark to collect (leave empty for all)'
+        required: false
+        default: ''
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'ec-index-scraper/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: ./ec-index-scraper
+        run: npm ci
+      
+      - name: Create .env file
+        working-directory: ./ec-index-scraper
+        run: |
+          cat > .env << EOF
+          # eBay API (official)
+          EBAY_APP_ID=${{ secrets.EBAY_APP_ID }}
+          EBAY_CERT_ID=${{ secrets.EBAY_CERT_ID }}
+          EBAY_DEV_ID=${{ secrets.EBAY_DEV_ID }}
+          EBAY_MARKETPLACE=EBAY_DE
+          
+          # Amazon - no keys needed (EU DMA protected)
+          
+          # Rate limiting
+          RATE_LIMIT_RPS=0.5
+          REQUEST_DELAY_MS=2000
+          MAX_RETRIES=3
+          LOG_LEVEL=info
+          EOF
+      
+      - name: Run data collection
+        working-directory: ./ec-index-scraper
+        run: |
+          if [ -n "${{ github.event.inputs.benchmark }}" ]; then
+            npm run dev -- --benchmark ${{ github.event.inputs.benchmark }}
+          else
+            npm run dev -- --all
+          fi
+      
+      - name: Copy exported data to website
+        run: |
+          # Copy JSON files to the website's data directory
+          cp -r ec-index-scraper/data/export/*.json lib/data/ 2>/dev/null || echo "No export files found"
+      
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Add all data files
+          git add lib/data/*.json
+          git add ec-index-scraper/data/
+          
+          # Check if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "📊 Update market data $(date +%Y-%m-%d)"
+            git push
+          fi
+      
+      - name: Trigger Vercel rebuild (optional)
+        if: success()
+        run: |
+          if [ -n "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+            curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
+            echo "Triggered Vercel rebuild"
+          fi
+      
+      - name: Upload collection logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: collection-logs-${{ github.run_number }}
+          path: ec-index-scraper/logs/
+          retention-days: 30
+
+  # Notify on failure
+  notify-failure:
+    needs: collect
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send failure notification
+        run: |
+          echo "Data collection failed! Check the workflow logs."
+          # Add Slack/Discord/Email notification here if needed

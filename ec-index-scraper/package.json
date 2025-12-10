@@ -1,0 +1,32 @@
+{
+  "name": "ec-index-data-collector",
+  "version": "1.0.0",
+  "description": "Legal data collection framework for EC-Index benchmarks",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "collect:smartphones": "ts-node src/collectors/smartphone-collector.ts",
+    "collect:supplements": "ts-node src/collectors/supplement-collector.ts",
+    "collect:sneakers": "ts-node src/collectors/sneaker-collector.ts",
+    "collect:all": "ts-node src/index.ts --all",
+    "export:json": "ts-node src/utils/export-to-json.ts",
+    "schedule": "ts-node src/scheduler.ts"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^16.3.1",
+    "node-cron": "^3.0.3",
+    "p-limit": "^4.0.0",
+    "winston": "^3.11.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/node-cron": "^3.0.11",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.2"
+  }
+}
